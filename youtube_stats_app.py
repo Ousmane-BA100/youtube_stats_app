@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import requests
+import datetime as dt
 
 # Remplacez 'YOUR_API_KEY' par votre clé API YouTube Data API v3
 API_KEY = 'AIzaSyBPXBNpYVDB-w2V8BmV9WqWzB7UANH4A6g'
@@ -29,14 +30,16 @@ def get_video_stats(video_id):
         return None
 
 # Lire le fichier Excel et sélectionner les colonnes nécessaires
-#df = pd.read_excel(r'C:\Users\oba3994\Downloads\Nombre vue youtube\youtube-report-2024_new.xls', sheet_name='Networking', usecols=['Content', 'Video title', 'Video publish time', 'LINK'])
-df = pd.read_excel('https://github.com/Ousmane-BA100/youtube_stats_app/raw/main/youtube-report-2024_new.xls', sheet_name='Networking', usecols=['Content', 'Video title', 'Video publish time', 'LINK'])
+df = pd.read_excel('https://github.com/Ousmane-BA100/youtube_stats_app/raw/main/youtube-report-2024_new.xlsx', sheet_name='Networking', usecols=['Content', 'Video title', 'Video publish time', 'LINK'], engine='openpyxl')
 
 # Renommer la colonne 'Content' en 'video_id'
 df.rename(columns={'Content': 'video_id'}, inplace=True)
 
 # Interface utilisateur Streamlit
 st.title('YouTube Video Views')
+
+# Convertir la colonne 'Video publish time' en datetime
+df['Video publish time'] = pd.to_datetime(df['Video publish time'])
 
 # Création d'une liste pour stocker les données de vue de chaque vidéo
 views_data = []
@@ -55,21 +58,13 @@ for index, row in df.iterrows():
 # Ajouter les données de vue au DataFrame
 df['View Count'] = [view[1] for view in views_data]
 
-# # Trier le DataFrame par ordre décroissant en fonction du nombre de vues
-# df_sorted = df.sort_values(by='View Count', ascending=False)
+# Calculer les vues par trimestre pour l'année en cours
+current_year = dt.datetime.now().year
 
-# # Réindexer le DataFrame dans l'ordre
-# df_sorted = df_sorted.reset_index(drop=True)
-
-# # Affichage des données de vue sous forme de tableau
-# if not df_sorted.empty:
-#     st.subheader('Vues de chaque vidéo (trié par ordre décroissant) :')
-#     st.table(df_sorted)
-# else:
-#     st.write("Aucune donnée de vue disponible.")
-
-# Convertir la colonne 'Video publish time' en datetime
-df['Video publish time'] = pd.to_datetime(df['Video publish time'])
+df['views Q1'] = df.apply(lambda x: x['View Count'] if x['Video publish time'].year == current_year and x['Video publish time'].quarter == 1 else 0, axis=1)
+df['views Q2'] = df.apply(lambda x: x['View Count'] if x['Video publish time'].year == current_year and x['Video publish time'].quarter == 2 else 0, axis=1)
+df['views Q3'] = df.apply(lambda x: x['View Count'] if x['Video publish time'].year == current_year and x['Video publish time'].quarter == 3 else 0, axis=1)
+df['views Q4'] = df.apply(lambda x: x['View Count'] if x['Video publish time'].year == current_year and x['Video publish time'].quarter == 4 else 0, axis=1)
 
 # Trier le DataFrame par ordre décroissant en fonction du 'Video publish time'
 df_sorted = df.sort_values(by='Video publish time', ascending=False)
@@ -79,10 +74,7 @@ df_sorted = df_sorted.reset_index(drop=True)
 
 # Affichage des données de vue sous forme de tableau
 if not df_sorted.empty:
-    st.subheader('Vues de chaque vidéo (trié par date de publication décroissante) :')
+    st.subheader('Vues de chaque vidéo (trié par date de publication) :')
     st.table(df_sorted)
 else:
     st.write("Aucune donnée de vue disponible.")
-
-
-
