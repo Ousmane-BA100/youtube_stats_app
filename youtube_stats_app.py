@@ -2,25 +2,21 @@ import streamlit as st
 import pandas as pd
 import requests
 import datetime as dt
+from io import BytesIO
 
 # Remplacez 'YOUR_API_KEY' par votre clé API YouTube Data API v3
 API_KEY = 'AIzaSyBPXBNpYVDB-w2V8BmV9WqWzB7UANH4A6g'
 
+# URL du fichier Excel
+excel_url = 'https://github.com/Ousmane-BA100/youtube_stats_app/raw/main/youtube-report-2024_new.xlsx'
+
 # Fonction pour récupérer les statistiques d'une vidéo depuis l'API YouTube
 def get_video_stats(video_id):
-    # URL de l'API YouTube Data API v3 pour récupérer les statistiques d'une vidéo
     url = f'https://www.googleapis.com/youtube/v3/videos?id={video_id}&key={API_KEY}&part=statistics'
-
-    # Effectuer une requête GET à l'API
     response = requests.get(url)
-
-    # Vérifier si la requête a réussi (code de statut 200)
     if response.status_code == 200:
-        # Convertir la réponse en JSON
         data = response.json()
-        # Vérifier si la clé 'items' existe dans la réponse et si elle contient des éléments
         if 'items' in data and len(data['items']) > 0:
-            # Récupérer les statistiques de la vidéo (y compris le nombre de vues)
             statistics = data['items'][0]['statistics']
             view_count = statistics['viewCount']
             return view_count
@@ -29,8 +25,20 @@ def get_video_stats(video_id):
     else:
         return None
 
+# Fonction pour lire le fichier Excel depuis une URL
+def read_excel_from_url(url):
+    response = requests.get(url)
+    if response.status_code == 200:
+        file_data = BytesIO(response.content)
+        return pd.read_excel(file_data, sheet_name='Networking', usecols=['Content', 'Video title', 'Video publish time', 'LINK'], engine='openpyxl')
+    else:
+        st.error("Erreur lors du téléchargement du fichier Excel.")
+        return None
+
 # Lire le fichier Excel et sélectionner les colonnes nécessaires
-df = pd.read_excel('https://github.com/Ousmane-BA100/youtube_stats_app/raw/main/youtube-report-2024_new.xlsx', sheet_name='Networking', usecols=['Content', 'Video title', 'Video publish time', 'LINK'], engine='openpyxl')
+df = read_excel_from_url(excel_url)
+if df is None:
+    st.stop()
 
 # Renommer la colonne 'Content' en 'video_id'
 df.rename(columns={'Content': 'video_id'}, inplace=True)
@@ -52,7 +60,6 @@ for index, row in df.iterrows():
     if view_count is not None:
         views_data.append((video_title, int(view_count)))
     else:
-        # Si aucune statistique n'est disponible pour cette vidéo, ajoutez 0 comme valeur de vue
         views_data.append((video_title, 0))
 
 # Ajouter les données de vue au DataFrame
