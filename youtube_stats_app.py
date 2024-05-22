@@ -1,13 +1,13 @@
 import streamlit as st
 import pandas as pd
 import requests
-import datetime as dt
 from io import BytesIO
+import datetime as dt
 
 # Remplacez 'YOUR_API_KEY' par votre clé API YouTube Data API v3
 API_KEY = 'AIzaSyBPXBNpYVDB-w2V8BmV9WqWzB7UANH4A6g'
 
-# URL du fichier Excel
+# URL du fichier Excel sur GitHub
 excel_url = 'https://github.com/Ousmane-BA100/youtube_stats_app/raw/main/youtube-report-2024_new.xlsx'
 
 # Fonction pour récupérer les statistiques d'une vidéo depuis l'API YouTube
