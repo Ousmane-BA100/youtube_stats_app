@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import requests
+import datetime as dt
 
 # Remplacez 'YOUR_API_KEY' par votre clé API YouTube Data API v3
 API_KEY = 'AIzaSyBPXBNpYVDB-w2V8BmV9WqWzB7UANH4A6g'
@@ -33,6 +34,9 @@ df.rename(columns={'Content': 'video_id'}, inplace=True)
 
 # Interface utilisateur Streamlit
 st.title('YouTube Video Views')
+
+# Convertir la colonne 'Video publish time' en datetime
+df['Video publish time'] = pd.to_datetime(df['Video publish time'])
 
 # Création d'une liste pour stocker les données de vue de chaque vidéo
 views_data = []
