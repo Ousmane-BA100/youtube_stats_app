@@ -29,7 +29,8 @@ def get_video_stats(video_id):
         return None
 
 # Lire le fichier Excel et sélectionner les colonnes nécessaires
-df = pd.read_excel(r'C:\Users\oba3994\Downloads\Nombre vue youtube\youtube-report-2024_new.xls', sheet_name='Networking', usecols=['Content', 'Video title', 'Video publish time', 'LINK'])
+#df = pd.read_excel(r'C:\Users\oba3994\Downloads\Nombre vue youtube\youtube-report-2024_new.xls', sheet_name='Networking', usecols=['Content', 'Video title', 'Video publish time', 'LINK'])
+df = pd.read_excel('https://github.com/Ousmane-BA100/youtube_stats_app/raw/main/youtube-report-2024_new.xls', sheet_name='Networking', usecols=['Content', 'Video title', 'Video publish time', 'LINK'])
 
 # Renommer la colonne 'Content' en 'video_id'
 df.rename(columns={'Content': 'video_id'}, inplace=True)
