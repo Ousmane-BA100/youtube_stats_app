@@ -3,6 +3,9 @@ import pandas as pd
 import requests
 import datetime as dt
 
+# Configure the page layout to wide
+st.set_page_config(layout="wide")
+
 # Replace 'YOUR_API_KEY' with your YouTube Data API v3 key
 API_KEY = 'AIzaSyBPXBNpYVDB-w2V8BmV9WqWzB7UANH4A6g'
 
@@ -71,6 +74,13 @@ styled_df = df_sorted.style.apply(
     axis=0
 )
 
+# Function to make links clickable
+def make_clickable(link):
+    return f'<a href="{link}" target="_blank">{link}</a>'
+
+# Apply the make_clickable function to the LINK column
+df_sorted['LINK'] = df_sorted['LINK'].apply(make_clickable)
+
 # Layout with columns for the image and title
 col1, col2 = st.columns([1, 9])
 
@@ -83,7 +93,7 @@ with col2:
 # Display view data in a styled table
 if not df_sorted.empty:
     st.subheader('Video views (sorted by publication date descending):')
-    # Set table width to 100% of the container
-    st.write(styled_df.to_html(render_links=True, escape=False), unsafe_allow_html=True, width=0)
+    # Set table width to 1000 pixels
+    st.write(styled_df.to_html(escape=False), unsafe_allow_html=True)
 else:
     st.write("No view data available.")
