@@ -22,7 +22,7 @@ def get_video_stats(video_id):
         return None
 
 # Load the Excel file and create a dropdown to select the sheet
-sheet_name = st.selectbox('Select the worksheet', ['Networking', 'Spacewalkers'])
+sheet_name = st.selectbox('**Select the worksheet**', ['Networking', 'Spacewalkers'], key='worksheet')
 
 df = pd.read_excel(
     'https://github.com/Ousmane-BA100/youtube_stats_app/raw/main/youtube-report-2024_new.xls', 
@@ -75,7 +75,7 @@ styled_df = df_sorted.style.apply(
 col1, col2 = st.columns([1, 9])
 
 with col1:
-    st.image('ALE-MICROSITE.jpg', use_column_width=True)
+    st.image('https://github.com/Ousmane-BA100/youtube_stats_app/raw/main/ALE-MICROSITE.jpg', use_column_width=True)
 
 with col2:
     st.title('NBD - YouTube Video Views')
@@ -83,7 +83,7 @@ with col2:
 # Display view data in a styled table
 if not df_sorted.empty:
     st.subheader('Video views (sorted by publication date descending):')
-    # Set table width to 1000 pixels
-    st.dataframe(styled_df, width=1000)
+    # Set table width to 100% of the container
+    st.write(styled_df.to_html(render_links=True, escape=False), unsafe_allow_html=True, width=0)
 else:
     st.write("No view data available.")

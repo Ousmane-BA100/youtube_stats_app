@@ -40,9 +40,6 @@ df.rename(columns={'Video publish time': 'video publication date'}, inplace=True
 # Convert 'video publication date' column to datetime
 df['video publication date'] = pd.to_datetime(df['video publication date']).dt.date
 
-# Interface Streamlit
-st.title('NBD - YouTube Video Views')
-
 # Create a list to store view data for each video
 views_data = []
 
@@ -59,28 +56,25 @@ for index, row in df.iterrows():
 # Add view data to the DataFrame
 df['View Count'] = [view[1] for view in views_data]
 
+# Rearrange columns to place 'View Count' after 'Video title'
+df_sorted = df[['Video title', 'View Count', 'video publication date', 'LINK']]
+
 # Sort the DataFrame by publication date in descending order
-df_sorted = df.sort_values(by='video publication date', ascending=False)
+df_sorted = df_sorted.sort_values(by='video publication date', ascending=False)
 
 # Reindex the DataFrame in order
-df_sorted = df_sorted.reset_index(drop=False)
+df_sorted = df_sorted.reset_index(drop=True)
 
 # Apply alternating row colors
-styled_df = df_sorted.drop(columns=['video_id']).style.apply(
-    lambda x: ['background-color: #f9f9f9' if i%2 == 0 else 'background-color: #f0f0f0' for i in range(len(x))],
+styled_df = df_sorted.style.apply(
+    lambda x: ['background-color: #f9f9f9' if i % 2 == 0 else 'background-color: #f0f0f0' for i in range(len(x))],
     axis=0
 )
 
-# Layout with columns
-col1, col2 = st.columns([4, 1])
-
-with col1:
-    # Display view data in a styled table
-    if not df_sorted.empty:
-        st.subheader('Video views (sorted by publication date descending):')
-        st.dataframe(styled_df)
-    else:
-        st.write("No view data available.")
-
-with col2:
-    st.image('ALE-MICROSITE.jpg', use_column_width=True)
+# Display view data in a styled table
+if not df_sorted.empty:
+    st.subheader('Video views (sorted by publication date descending):')
+    # Set table width to 1000 pixels
+    st.dataframe(styled_df, width=1000, escape_html=False)
+else:
+    st.write("No view data available.")
