@@ -1,60 +1,86 @@
 import streamlit as st
 import pandas as pd
 import requests
-import plotly.express as px
+import datetime as dt
 
-# Remplacez 'YOUR_API_KEY' par votre clé API YouTube Data API v3
+# Replace 'YOUR_API_KEY' with your YouTube Data API v3 key
 API_KEY = 'AIzaSyBPXBNpYVDB-w2V8BmV9WqWzB7UANH4A6g'
 
-# Fonction pour récupérer les statistiques d'une vidéo depuis l'API YouTube
+# Function to get video stats from YouTube API
 def get_video_stats(video_id):
-    # URL de l'API YouTube Data API v3 pour récupérer les statistiques d'une vidéo
     url = f'https://www.googleapis.com/youtube/v3/videos?id={video_id}&key={API_KEY}&part=statistics'
-
-    # Effectuer une requête GET à l'API
     response = requests.get(url)
-
-    # Vérifier si la requête a réussi (code de statut 200)
     if response.status_code == 200:
-        # Convertir la réponse en JSON
         data = response.json()
-        # Vérifier si la clé 'items' existe dans la réponse et si elle contient des éléments
         if 'items' in data and len(data['items']) > 0:
-            # Récupérer les statistiques de la vidéo (y compris le nombre de vues)
             statistics = data['items'][0]['statistics']
-            view_count = int(statistics['viewCount']) # Convertir en entier
+            view_count = statistics['viewCount']
             return view_count
         else:
             return None
     else:
         return None
 
-# Lire le fichier Excel et sélectionner les colonnes nécessaires
-df = pd.read_excel(r'C:\Users\oba3994\Downloads\Nombre vue youtube\youtube-report-2024_new.xls', sheet_name='Networking', usecols=['Content', 'Video title', 'LINK'])
+# Load the Excel file and create a dropdown to select the sheet
+sheet_name = st.selectbox('Select the worksheet', ['Networking', 'Spacewalkers'])
 
-# Renommer la colonne 'Content' en 'video_id'
+df = pd.read_excel(
+    'https://github.com/Ousmane-BA100/youtube_stats_app/raw/main/youtube-report-2024_new.xls', 
+    sheet_name=sheet_name, 
+    usecols=['Content', 'Video title', 'Video publish time', 'LINK'], 
+    engine='xlrd'
+)
+
+# Rename the 'Content' column to 'video_id'
 df.rename(columns={'Content': 'video_id'}, inplace=True)
 
-# Création d'une colonne pour stocker les vues de chaque vidéo
-df['View Count'] = df['video_id'].apply(lambda x: get_video_stats(x))
+# Rename the 'Video publish time' column to 'video publication date'
+df.rename(columns={'Video publish time': 'video publication date'}, inplace=True)
 
-# Supprimer les lignes avec des vues manquantes
-df = df.dropna(subset=['View Count'])
+# Convert 'video publication date' column to datetime
+df['video publication date'] = pd.to_datetime(df['video publication date']).dt.date
 
-# Identifier le nombre maximal de vues parmi toutes les vidéos
-max_view_count = 30000
+# Interface Streamlit
+st.title('NBD - YouTube Video Views')
 
-# Filtrer le DataFrame pour exclure les vidéos avec un nombre de vues supérieur au maximum
-filtered_df = df[df['View Count'] < max_view_count]
+# Create a list to store view data for each video
+views_data = []
 
-# Affichage du DataFrame filtréSS
-st.write("Données après filtrage des vidéos avec plus de vues que toutes les autres :")
-st.write(filtered_df)
+# Iterate over each row in the DataFrame to get views for each video
+for index, row in df.iterrows():
+    video_id = row['video_id']
+    video_title = row['Video title']
+    view_count = get_video_stats(video_id)
+    if view_count is not None:
+        views_data.append((video_title, int(view_count)))
+    else:
+        views_data.append((video_title, 0))
 
-# Création du graphique à barres avec une taille de barre augmentée
-fig = px.bar(filtered_df, x='Video title', y='View Count', title='Nombre de vues par vidéo', range_y=[0, filtered_df['View Count'].max()*1.1], barmode='group', width=10) # Valeur modifiée à 10
-st.plotly_chart(fig, use_container_width=True)
+# Add view data to the DataFrame
+df['View Count'] = [view[1] for view in views_data]
 
+# Sort the DataFrame by publication date in descending order
+df_sorted = df.sort_values(by='video publication date', ascending=False)
 
+# Reindex the DataFrame in order
+df_sorted = df_sorted.reset_index(drop=False)
 
+# Apply alternating row colors
+styled_df = df_sorted.drop(columns=['video_id']).style.apply(
+    lambda x: ['background-color: #f9f9f9' if i%2 == 0 else 'background-color: #f0f0f0' for i in range(len(x))],
+    axis=0
+)
 
+# Layout with columns
+col1, col2 = st.columns([4, 1])
+
+with col1:
+    # Display view data in a styled table
+    if not df_sorted.empty:
+        st.subheader('Video views (sorted by publication date descending):')
+        st.dataframe(styled_df)
+    else:
+        st.write("No view data available.")
+
+with col2:
+    st.image('ALE-MICROSITE.jpg', use_column_width=True)

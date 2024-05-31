@@ -3,10 +3,10 @@ import pandas as pd
 import requests
 import datetime as dt
 
-# Remplacez 'YOUR_API_KEY' par votre clé API YouTube Data API v3
+# Replace 'YOUR_API_KEY' with your YouTube Data API v3 key
 API_KEY = 'AIzaSyBPXBNpYVDB-w2V8BmV9WqWzB7UANH4A6g'
 
-# Fonction pour récupérer les statistiques d'une vidéo depuis l'API YouTube
+# Function to get video stats from YouTube API
 def get_video_stats(video_id):
     url = f'https://www.googleapis.com/youtube/v3/videos?id={video_id}&key={API_KEY}&part=statistics'
     response = requests.get(url)
@@ -21,27 +21,29 @@ def get_video_stats(video_id):
     else:
         return None
 
-# Lire le fichier Excel et sélectionner les colonnes nécessaires
+# Load the Excel file and create a dropdown to select the sheet
+sheet_name = st.selectbox('Select the worksheet', ['Networking', 'Spacewalkers'])
+
 df = pd.read_excel(
     'https://github.com/Ousmane-BA100/youtube_stats_app/raw/main/youtube-report-2024_new.xls', 
-    sheet_name='Networking', 
+    sheet_name=sheet_name, 
     usecols=['Content', 'Video title', 'Video publish time', 'LINK'], 
     engine='xlrd'
 )
 
-# Renommer la colonne 'Content' en 'video_id'
+# Rename the 'Content' column to 'video_id'
 df.rename(columns={'Content': 'video_id'}, inplace=True)
 
-# Interface utilisateur Streamlit
-st.title('YouTube Video Views')
+# Rename the 'Video publish time' column to 'video publication date'
+df.rename(columns={'Video publish time': 'video publication date'}, inplace=True)
 
-# Convertir la colonne 'Video publish time' en datetime
-df['Video publish time'] = pd.to_datetime(df['Video publish time'])
+# Convert 'video publication date' column to datetime
+df['video publication date'] = pd.to_datetime(df['video publication date']).dt.date
 
-# Création d'une liste pour stocker les données de vue de chaque vidéo
+# Create a list to store view data for each video
 views_data = []
 
-# Parcourir chaque ligne du DataFrame pour récupérer les vues de chaque vidéo
+# Iterate over each row in the DataFrame to get views for each video
 for index, row in df.iterrows():
     video_id = row['video_id']
     video_title = row['Video title']
@@ -51,18 +53,37 @@ for index, row in df.iterrows():
     else:
         views_data.append((video_title, 0))
 
-# Ajouter les données de vue au DataFrame
+# Add view data to the DataFrame
 df['View Count'] = [view[1] for view in views_data]
 
-# Trier le DataFrame par ordre décroissant en fonction de la date de publication
-df_sorted = df.sort_values(by='Video publish time', ascending=False)
+# Rearrange columns to place 'View Count' after 'Video title'
+df_sorted = df[['Video title', 'View Count', 'video publication date', 'LINK']]
 
-# Réindexer le DataFrame dans l'ordre
+# Sort the DataFrame by publication date in descending order
+df_sorted = df_sorted.sort_values(by='video publication date', ascending=False)
+
+# Reindex the DataFrame in order
 df_sorted = df_sorted.reset_index(drop=True)
 
-# Affichage des données de vue sous forme de tableau
+# Apply alternating row colors
+styled_df = df_sorted.style.apply(
+    lambda x: ['background-color: #f9f9f9' if i % 2 == 0 else 'background-color: #f0f0f0' for i in range(len(x))],
+    axis=0
+)
+
+# Layout with columns for the image and title
+col1, col2 = st.columns([1, 9])
+
+with col1:
+    st.image('ALE-MICROSITE.jpg', use_column_width=True)
+
+with col2:
+    st.title('NBD - YouTube Video Views')
+
+# Display view data in a styled table
 if not df_sorted.empty:
-    st.subheader('Vues de chaque vidéo (trié par date de publication décroissante) :')
-    st.table(df_sorted)
+    st.subheader('Video views (sorted by publication date descending):')
+    # Set table width to 1000 pixels
+    st.dataframe(styled_df, width=1000)
 else:
-    st.write("Aucune donnée de vue disponible.")
+    st.write("No view data available.")
