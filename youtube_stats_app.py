@@ -75,7 +75,7 @@ styled_df = df_sorted.style.apply(
 col1, col2 = st.columns([1, 9])
 
 with col1:
-    st.image('ALE-MICROSITE.jpg', use_column_width=True)
+    st.image('https://github.com/Ousmane-BA100/youtube_stats_app/raw/main/ALE-MICROSITE.jpg', use_column_width=True)
 
 with col2:
     st.title('NBD - YouTube Video Views')
