@@ -43,7 +43,7 @@ def get_video_stats(video_id):
 # Playlist IDs to get data from (Example)
 playlists = {
     "Spacewalkers": "PL-mHF9yP7tLC5aEgEP3z3cBXfFAKcB2OA",
-    "OmniVista Network Advisor": "PL-mHF9yP7tLDRCNBKkwJc85vodgc7Kws4",
+    "Perfect Blend OVNA": "PL-mHF9yP7tLDRCNBKkwJc85vodgc7Kws4",
     "Networking IoT": "PL837C80A0F53215EF"
     # Add more playlists as needed
 }
@@ -57,7 +57,7 @@ col1, col2 = st.columns([1, 9])
 with col1:
     st.image(logo, width=100)
 with col2:
-    st.title(f"{selected_playlist} - Video Data")
+    st.title(f"{selected_playlist}")
 
 # Get the videos for the selected playlist
 playlist_id = playlists[selected_playlist]
