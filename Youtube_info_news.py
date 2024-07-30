@@ -42,9 +42,9 @@ def get_video_stats(video_id):
 
 # Playlist IDs to get data from (Example)
 playlists = {
-    "Networking IoT": "PL837C80A0F53215EF",
     "Spacewalkers": "PL-mHF9yP7tLC5aEgEP3z3cBXfFAKcB2OA",
-    "OmniVista Network Advisor": "PL-mHF9yP7tLDRCNBKkwJc85vodgc7Kws4"
+    "OmniVista Network Advisor": "PL-mHF9yP7tLDRCNBKkwJc85vodgc7Kws4",
+    "Networking IoT": "PL837C80A0F53215EF"
     # Add more playlists as needed
 }
 
